@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.kmbeast.mapper.FeedRecordMapper">
+
+    <insert id="insert" parameterType="cn.kmbeast.pojo.entity.FeedRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO feed_record (feed_point_id,
+                                feed_point_name,
+                                user_id,
+                                user_name,
+                                feed_time,
+                                feed_content,
+                                animal_count,
+                                create_time)
+        VALUES (#{feedPointId},
+                #{feedPointName},
+                #{userId},
+                #{userName},
+                #{feedTime},
+                #{feedContent},
+                #{animalCount},
+                #{createTime})
+    </insert>
+
+    <update id="update" parameterType="cn.kmbeast.pojo.entity.FeedRecord">
+        UPDATE feed_record
+        <set>
+            <if test="feedPointId != null">
+                feed_point_id = #{feedPointId},
+            </if>
+            <if test="feedPointName != null">
+                feed_point_name = #{feedPointName},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="userName != null">
+                user_name = #{userName},
+            </if>
+            <if test="feedTime != null">
+                feed_time = #{feedTime},
+            </if>
+            <if test="feedContent != null">
+                feed_content = #{feedContent},
+            </if>
+            <if test="animalCount != null">
+                animal_count = #{animalCount},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="batchDelete" parameterType="list">
+        DELETE FROM feed_record WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getById" resultType="cn.kmbeast.pojo.entity.FeedRecord">
+        SELECT * FROM feed_record WHERE id = #{id}
+    </select>
+
+    <select id="query" resultType="cn.kmbeast.pojo.entity.FeedRecord">
+        SELECT * FROM feed_record
+        <where>
+            <if test="queryDto.feedPointId != null">
+                AND feed_point_id = #{queryDto.feedPointId}
+            </if>
+            <if test="queryDto.userId != null">
+                AND user_id = #{queryDto.userId}
+            </if>
+            <if test="queryDto.feedPointName != null and queryDto.feedPointName != ''">
+                AND feed_point_name LIKE concat('%', #{queryDto.feedPointName}, '%')
+            </if>
+            <if test="queryDto.startTime != null">
+                AND feed_time &gt;= #{queryDto.startTime}
+            </if>
+            <if test="queryDto.endTime != null">
+                AND feed_time &lt;= #{queryDto.endTime}
+            </if>
+        </where>
+        ORDER BY feed_time DESC
+        <if test="queryDto.current != null and queryDto.size != null">
+            LIMIT #{queryDto.current}, #{queryDto.size}
+        </if>
+    </select>
+
+    <select id="queryCount" resultType="integer">
+        SELECT COUNT(*) FROM feed_record
+        <where>
+            <if test="queryDto.feedPointId != null">
+                AND feed_point_id = #{queryDto.feedPointId}
+            </if>
+            <if test="queryDto.userId != null">
+                AND user_id = #{queryDto.userId}
+            </if>
+            <if test="queryDto.feedPointName != null and queryDto.feedPointName != ''">
+                AND feed_point_name LIKE concat('%', #{queryDto.feedPointName}, '%')
+            </if>
+            <if test="queryDto.startTime != null">
+                AND feed_time &gt;= #{queryDto.startTime}
+            </if>
+            <if test="queryDto.endTime != null">
+                AND feed_time &lt;= #{queryDto.endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryByUserId" resultType="cn.kmbeast.pojo.entity.FeedRecord">
+        SELECT * FROM feed_record
+        WHERE user_id = #{userId}
+        ORDER BY feed_time DESC
+    </select>
+
+</mapper>

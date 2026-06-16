@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.kmbeast.mapper.AdoptionMapper">
+
+    <insert id="insert" parameterType="cn.kmbeast.pojo.entity.Adoption" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO adoption (animal_id,
+                             animal_name,
+                             animal_type,
+                             animal_avatar,
+                             user_id,
+                             user_name,
+                             user_phone,
+                             user_address,
+                             reason,
+                             status,
+                             create_time)
+        VALUES (#{animalId},
+                #{animalName},
+                #{animalType},
+                #{animalAvatar},
+                #{userId},
+                #{userName},
+                #{userPhone},
+                #{userAddress},
+                #{reason},
+                #{status},
+                #{createTime})
+    </insert>
+
+    <update id="update" parameterType="cn.kmbeast.pojo.entity.Adoption">
+        UPDATE adoption
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="rejectReason != null">
+                reject_reason = #{rejectReason},
+            </if>
+            <if test="reviewerId != null">
+                reviewer_id = #{reviewerId},
+            </if>
+            <if test="reviewerName != null">
+                reviewer_name = #{reviewerName},
+            </if>
+            update_time = #{updateTime}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="batchDelete" parameterType="list">
+        DELETE FROM adoption WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getById" resultType="cn.kmbeast.pojo.entity.Adoption">
+        SELECT * FROM adoption WHERE id = #{id}
+    </select>
+
+    <select id="query" resultType="cn.kmbeast.pojo.entity.Adoption">
+        SELECT * FROM adoption
+        <where>
+            <if test="queryDto.animalId != null">
+                AND animal_id = #{queryDto.animalId}
+            </if>
+            <if test="queryDto.userId != null">
+                AND user_id = #{queryDto.userId}
+            </if>
+            <if test="queryDto.status != null and queryDto.status != ''">
+                AND status = #{queryDto.status}
+            </if>
+            <if test="queryDto.animalName != null and queryDto.animalName != ''">
+                AND animal_name LIKE concat('%', #{queryDto.animalName}, '%')
+            </if>
+            <if test="queryDto.userName != null and queryDto.userName != ''">
+                AND user_name LIKE concat('%', #{queryDto.userName}, '%')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        <if test="queryDto.current != null and queryDto.size != null">
+            LIMIT #{queryDto.current}, #{queryDto.size}
+        </if>
+    </select>
+
+    <select id="queryCount" resultType="integer">
+        SELECT COUNT(*) FROM adoption
+        <where>
+            <if test="queryDto.animalId != null">
+                AND animal_id = #{queryDto.animalId}
+            </if>
+            <if test="queryDto.userId != null">
+                AND user_id = #{queryDto.userId}
+            </if>
+            <if test="queryDto.status != null and queryDto.status != ''">
+                AND status = #{queryDto.status}
+            </if>
+            <if test="queryDto.animalName != null and queryDto.animalName != ''">
+                AND animal_name LIKE concat('%', #{queryDto.animalName}, '%')
+            </if>
+            <if test="queryDto.userName != null and queryDto.userName != ''">
+                AND user_name LIKE concat('%', #{queryDto.userName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="queryByUserId" resultType="cn.kmbeast.pojo.entity.Adoption">
+        SELECT * FROM adoption
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="queryAvailableAnimals" resultType="cn.kmbeast.pojo.entity.Adoption">
+        SELECT a.id as animalId,
+               a.name as animalName,
+               a.type as animalType,
+               a.avatar as animalAvatar,
+               a.location as userAddress
+        FROM animal a
+        WHERE a.life_status = '待领养'
+        ORDER BY a.create_time DESC
+    </select>
+
+    <select id="queryAdoptedAnimals" resultType="cn.kmbeast.pojo.entity.Adoption">
+        SELECT ad.*, a.avatar as animalAvatar
+        FROM adoption ad
+        LEFT JOIN animal a ON ad.animal_id = a.id
+        WHERE ad.status = 'approved'
+        ORDER BY ad.update_time DESC
+    </select>
+
+    <select id="queryByAnimalIdAndUserId" resultType="cn.kmbeast.pojo.entity.Adoption">
+        SELECT * FROM adoption
+        WHERE animal_id = #{animalId}
+          AND user_id = #{userId}
+          AND status IN ('pending', 'approved')
+        LIMIT 1
+    </select>
+
+</mapper>
