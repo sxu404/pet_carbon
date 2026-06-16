@@ -24,6 +24,7 @@ public class User {
 
     private String phone;
 
+    private String email;
 
     private String name;
     private String password;
@@ -38,4 +39,11 @@ public class User {
     private String avatar;
 
     private String remark;
+
+    private Integer isVolunteerApproved;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime volunteerApplyTime;
+
+    private String volunteerReason;
 }

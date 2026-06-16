@@ -7,10 +7,11 @@
                           age,
                           name,
                           phone,
+                          email,
                           password,
                           role,
                           status,
-                          create_time,
+                          createTime,
                           avatar,
                           remark)
         VALUES (#{username},
@@ -18,6 +19,7 @@
                 #{age},
                 #{name},
                 #{phone},
+                #{email},
                 #{password},
                 #{role},
                 #{status},
@@ -56,6 +58,9 @@
             <if test="phone != null">
                 phone = #{phone},
             </if>
+            <if test="email != null">
+                email = #{email},
+            </if>
             <if test="password != null">
                 password = #{password},
             </if>
@@ -70,6 +75,15 @@
             </if>
             <if test="remark != null">
                 remark = #{remark},
+            </if>
+            <if test="isVolunteerApproved != null">
+                isVolunteerApproved = #{isVolunteerApproved},
+            </if>
+            <if test="volunteerApplyTime != null">
+                volunteerApplyTime = #{volunteerApplyTime},
+            </if>
+            <if test="volunteerReason != null">
+                volunteerReason = #{volunteerReason},
             </if>
         </set>
         WHERE id = #{id}
@@ -116,11 +130,14 @@
             <if test="status != null">
                 AND u.status = #{status}
             </if>
+            <if test="isVolunteerApproved != null">
+                AND u.isVolunteerApproved = #{isVolunteerApproved}
+            </if>
             <if test="startTime != null and endTime != null">
-                AND u.create_time BETWEEN #{startTime} AND #{endTime}
+                AND u.createTime BETWEEN #{startTime} AND #{endTime}
             </if>
         </where>
-        ORDER BY u.create_time DESC
+        ORDER BY u.createTime DESC
         <if test="current != null and size != null">
             LIMIT #{current},#{size}
         </if>
@@ -142,8 +159,11 @@
             <if test="status != null">
                 AND u.status = #{status}
             </if>
+            <if test="isVolunteerApproved != null">
+                AND u.isVolunteerApproved = #{isVolunteerApproved}
+            </if>
             <if test="startTime != null and endTime != null">
-                AND u.create_time BETWEEN #{startTime} AND #{endTime}
+                AND u.createTime BETWEEN #{startTime} AND #{endTime}
             </if>
         </where>
     </select>
@@ -155,12 +175,16 @@
         <result column="age" property="age"/>
         <result column="name" property="name"/>
         <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
         <result column="password" property="password"/>
         <result column="role" property="role"/>
         <result column="status" property="status"/>
-        <result column="create_time" property="createTime"/>
+        <result column="createTime" property="createTime"/>
         <result column="avatar" property="avatar"/>
         <result column="remark" property="remark"/>
+        <result column="isVolunteerApproved" property="isVolunteerApproved"/>
+        <result column="volunteerApplyTime" property="volunteerApplyTime"/>
+        <result column="volunteerReason" property="volunteerReason"/>
     </resultMap>
 
 </mapper>

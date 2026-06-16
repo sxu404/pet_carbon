@@ -14,4 +14,6 @@ public class UserQueryDto extends QueryDto {
     private String role;
 
     private Integer status;
+
+    private Integer isVolunteerApproved;
 }
