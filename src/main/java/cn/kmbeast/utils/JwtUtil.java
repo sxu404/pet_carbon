@@ -60,30 +60,4 @@ public class JwtUtil {
         }
     }
 
-    /**
-     * 从token中获取用户ID
-     *
-     * @param token token信息
-     * @return 用户ID
-     */
-    public static Integer getUserId(String token) {
-        try {
-            Claims claims = fromToken(token);
-            if (claims != null) {
-                Object idObj = claims.get("id");
-                if (idObj instanceof Integer) {
-                    return (Integer) idObj;
-                } else if (idObj instanceof Long) {
-                    return ((Long) idObj).intValue();
-                } else if (idObj instanceof String) {
-                    return Integer.parseInt((String) idObj);
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
 }

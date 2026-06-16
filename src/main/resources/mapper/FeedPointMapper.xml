@@ -2,143 +2,58 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.kmbeast.mapper.FeedPointMapper">
 
-    <insert id="insert" parameterType="cn.kmbeast.pojo.entity.FeedPoint" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO feed_point (name,
-                                location,
-                                description,
-                                image,
-                                status,
-                                apply_status,
-                                show_to_student,
-                                animal_count,
-                                today_feed_count,
-                                latitude,
-                                longitude,
-                                submitter_id,
-                                submitter_name)
-        VALUES (#{name},
-                #{location},
-                #{description},
-                #{image},
-                #{status},
-                #{applyStatus},
-                #{showToStudent},
-                #{animalCount},
-                #{todayFeedCount},
-                #{latitude},
-                #{longitude},
-                #{submitterId},
-                #{submitterName})
+    <insert id="insert" parameterType="cn.kmbeast.pojo.entity.FeedPoint" useGeneratedKeys="true" keyProperty="feedId">
+        INSERT INTO feed_point (feed_name,
+                                feed_location,
+                                feed_status,
+                                feed_remark)
+        VALUES (#{feedName},
+                #{feedLocation},
+                #{feedStatus},
+                #{feedRemark})
     </insert>
 
     <update id="update" parameterType="cn.kmbeast.pojo.entity.FeedPoint">
         UPDATE feed_point
         <set>
-            <if test="name != null">
-                name = #{name},
+            <if test="feedName != null">
+                feed_name = #{feedName},
             </if>
-            <if test="location != null">
-                location = #{location},
+            <if test="feedLocation != null">
+                feed_location = #{feedLocation},
             </if>
-            <if test="description != null">
-                description = #{description},
+            <if test="feedStatus != null">
+                feed_status = #{feedStatus},
             </if>
-            <if test="image != null">
-                image = #{image},
-            </if>
-            <if test="status != null">
-                status = #{status},
-            </if>
-            <if test="applyStatus != null">
-                apply_status = #{applyStatus},
-            </if>
-            <if test="showToStudent != null">
-                show_to_student = #{showToStudent},
-            </if>
-            <if test="animalCount != null">
-                animal_count = #{animalCount},
-            </if>
-            <if test="todayFeedCount != null">
-                today_feed_count = #{todayFeedCount},
-            </if>
-            <if test="latitude != null">
-                latitude = #{latitude},
-            </if>
-            <if test="longitude != null">
-                longitude = #{longitude},
-            </if>
-            <if test="submitterId != null">
-                submitter_id = #{submitterId},
-            </if>
-            <if test="submitterName != null">
-                submitter_name = #{submitterName},
+            <if test="feedRemark != null">
+                feed_remark = #{feedRemark},
             </if>
         </set>
-        WHERE id = #{id}
+        WHERE feed_id = #{feedId}
     </update>
 
     <delete id="batchDelete" parameterType="list">
-        DELETE FROM feed_point WHERE id IN
-        <foreach collection="ids" item="id" open="(" separator="," close=")">
-            #{id}
+        DELETE FROM feed_point WHERE feed_id IN
+        <foreach collection="ids" item="feedId" open="(" separator="," close=")">
+            #{feedId}
         </foreach>
     </delete>
 
     <select id="getById" resultType="cn.kmbeast.pojo.entity.FeedPoint">
-        SELECT 
-            fp.id,
-            fp.name,
-            fp.location,
-            fp.description,
-            fp.image,
-            fp.status,
-            fp.apply_status AS applyStatus,
-            fp.show_to_student AS showToStudent,
-            fp.animal_count AS animalCount,
-            fp.today_feed_count AS todayFeedCount,
-            fp.latitude,
-            fp.longitude,
-            fp.submitter_id AS submitterId,
-            COALESCE(fp.submitter_name, u.name, u.username) AS submitterName,
-            fp.create_time AS createTime,
-            fp.update_time AS updateTime
-        FROM feed_point fp
-        LEFT JOIN user u ON fp.submitter_id = u.id
-        WHERE fp.id = #{id}
+        SELECT * FROM feed_point WHERE feed_id = #{feedId}
     </select>
 
     <select id="query" resultType="cn.kmbeast.pojo.entity.FeedPoint">
-        SELECT 
-            fp.id,
-            fp.name,
-            fp.location,
-            fp.description,
-            fp.image,
-            fp.status,
-            fp.apply_status AS applyStatus,
-            fp.show_to_student AS showToStudent,
-            fp.animal_count AS animalCount,
-            fp.today_feed_count AS todayFeedCount,
-            fp.latitude,
-            fp.longitude,
-            fp.submitter_id AS submitterId,
-            COALESCE(fp.submitter_name, u.name, u.username) AS submitterName,
-            fp.create_time AS createTime,
-            fp.update_time AS updateTime
-        FROM feed_point fp
-        LEFT JOIN user u ON fp.submitter_id = u.id
+        SELECT * FROM feed_point
         <where>
-            <if test="name != null and name != ''">
-                AND fp.name LIKE concat('%', #{name}, '%')
+            <if test="feedName != null and feedName != ''">
+                AND feed_name LIKE concat('%', #{feedName}, '%')
             </if>
-            <if test="applyStatus != null and applyStatus != ''">
-                AND fp.apply_status = #{applyStatus}
-            </if>
-            <if test="status != null and status != ''">
-                AND fp.status = #{status}
+            <if test="feedStatus != null and feedStatus != ''">
+                AND feed_status = #{feedStatus}
             </if>
         </where>
-        ORDER BY fp.id DESC
+        ORDER BY feed_id DESC
         <if test="current != null and size != null">
             LIMIT #{current}, #{size}
         </if>
@@ -147,14 +62,11 @@
     <select id="queryCount" resultType="integer">
         SELECT COUNT(*) FROM feed_point
         <where>
-            <if test="name != null and name != ''">
-                AND name LIKE concat('%', #{name}, '%')
+            <if test="feedName != null and feedName != ''">
+                AND feed_name LIKE concat('%', #{feedName}, '%')
             </if>
-            <if test="applyStatus != null and applyStatus != ''">
-                AND apply_status = #{applyStatus}
-            </if>
-            <if test="status != null and status != ''">
-                AND status = #{status}
+            <if test="feedStatus != null and feedStatus != ''">
+                AND feed_status = #{feedStatus}
             </if>
         </where>
     </select>

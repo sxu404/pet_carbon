@@ -26,4 +26,5 @@ public class Animal {
     private LocalDateTime createTime;    // 建档时间
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;    // 更新时间
+    private Integer isDeleted;           // 是否删除（0-否 1-是）
 }

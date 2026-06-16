@@ -1,110 +1,125 @@
 package cn.kmbeast.controller;
 
+import cn.kmbeast.context.LocalThreadHolder;
 import cn.kmbeast.pojo.api.ApiResult;
 import cn.kmbeast.pojo.api.Result;
-import cn.kmbeast.pojo.dto.query.extend.AdoptionApplicationQueryDto;
-import cn.kmbeast.pojo.entity.AdoptionApplication;
-import cn.kmbeast.service.AdoptionApplicationService;
+import cn.kmbeast.pojo.dto.query.extend.AdoptionQueryDto;
+import cn.kmbeast.pojo.entity.Adoption;
+import cn.kmbeast.service.AdoptionService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
 
-/**
- * 领养申请控制器（对应前端adoption.js接口）
- */
 @RestController
 @RequestMapping("/adoption")
 public class AdoptionController {
 
     @Resource
-    private AdoptionApplicationService adoptionApplicationService;
+    private AdoptionService adoptionService;
 
-    /**
-     * 查询领养申请列表
-     *
-     * @param queryDto 查询条件
-     * @return 领养申请列表（带分页）
-     */
-    @PostMapping("/query")
-    public Result<List<AdoptionApplication>> query(@RequestBody(required = false) AdoptionApplicationQueryDto queryDto) {
-        if (queryDto == null) {
-            queryDto = new AdoptionApplicationQueryDto();
+    @PostMapping
+    public Result<String> apply(@RequestBody Adoption adoption) {
+        Integer userId = LocalThreadHolder.getUserId();
+        if (userId == null) {
+            return ApiResult.error("用户未登录");
         }
-        List<AdoptionApplication> list = adoptionApplicationService.query(queryDto);
-        Integer total = adoptionApplicationService.queryCount(queryDto);
+        // 检查是否已申请
+        if (adoptionService.checkUserApplied(adoption.getAnimalId(), userId)) {
+            return ApiResult.error("您已申请过该动物的领养");
+        }
+        adoption.setUserId(userId);
+        adoptionService.insert(adoption);
+        return ApiResult.success();
+    }
+
+    @PutMapping
+    public Result<String> update(@RequestBody Adoption adoption) {
+        adoptionService.update(adoption);
+        return ApiResult.success();
+    }
+
+    @DeleteMapping
+    public Result<String> delete(@RequestBody List<Integer> ids) {
+        adoptionService.batchDelete(ids);
+        return ApiResult.success();
+    }
+
+    @GetMapping("/{id}")
+    public Result<Adoption> getById(@PathVariable Integer id) {
+        Adoption adoption = adoptionService.getById(id);
+        return ApiResult.success(adoption);
+    }
+
+    @PostMapping("/query")
+    public Result<List<Adoption>> query(@RequestBody AdoptionQueryDto queryDto) {
+        List<Adoption> list = adoptionService.query(queryDto);
+        Integer total = adoptionService.queryCount(queryDto);
         return ApiResult.success(list, total);
     }
 
-    /**
-     * 根据ID获取领养申请
-     *
-     * @param id 主键ID
-     * @return 领养申请实体
-     */
-    @GetMapping("/{id}")
-    public Result<AdoptionApplication> getById(@PathVariable Long id) {
-        AdoptionApplication adoptionApplication = adoptionApplicationService.getById(id);
-        return ApiResult.success(adoptionApplication);
+    @PostMapping("/available")
+    public Result<List<Adoption>> getAvailableAnimals() {
+        List<Adoption> list = adoptionService.queryAvailableAnimals();
+        return ApiResult.success(list);
     }
 
-    /**
-     * 新增领养申请
-     *
-     * @param adoptionApplication 领养申请实体
-     * @return 操作结果
-     */
-    @PostMapping
-    public Result<String> insert(@RequestBody AdoptionApplication adoptionApplication) {
-        adoptionApplicationService.insert(adoptionApplication);
-        return ApiResult.success("新增成功");
+    @GetMapping("/adopted")
+    public Result<List<Adoption>> getAdoptedAnimals() {
+        List<Adoption> list = adoptionService.queryAdoptedAnimals();
+        return ApiResult.success(list);
     }
 
-    /**
-     * 修改领养申请
-     *
-     * @param adoptionApplication 领养申请实体
-     * @return 操作结果
-     */
-    @PutMapping
-    public Result<String> update(@RequestBody AdoptionApplication adoptionApplication) {
-        adoptionApplicationService.update(adoptionApplication);
-        return ApiResult.success("更新成功");
+    @PostMapping("/adopted")
+    public Result<List<Adoption>> getAdoptedAnimalsPost() {
+        List<Adoption> list = adoptionService.queryAdoptedAnimals();
+        return ApiResult.success(list);
     }
 
-    /**
-     * 删除领养申请
-     *
-     * @param id 主键ID
-     * @return 操作结果
-     */
-    @DeleteMapping("/{id}")
-    public Result<String> deleteById(@PathVariable Long id) {
-        adoptionApplicationService.deleteById(id);
-        return ApiResult.success("删除成功");
+    @GetMapping("/my")
+    public Result<List<Adoption>> getMyAdoptions() {
+        Integer userId = LocalThreadHolder.getUserId();
+        if (userId == null) {
+            return ApiResult.error("用户未登录");
+        }
+        List<Adoption> list = adoptionService.queryByUserId(userId);
+        return ApiResult.success(list);
     }
 
-    /**
-     * 审核领养申请
-     *
-     * @param adoptionApplication 包含审核信息的领养申请实体
-     * @return 操作结果
-     */
-    @PostMapping("/audit")
-    public Result<String> audit(@RequestBody AdoptionApplication adoptionApplication) {
-        adoptionApplicationService.update(adoptionApplication);
-        return ApiResult.success("审核成功");
+    @PostMapping("/my")
+    public Result<List<Adoption>> getMyAdoptionsPost() {
+        Integer userId = LocalThreadHolder.getUserId();
+        if (userId == null) {
+            return ApiResult.error("用户未登录");
+        }
+        List<Adoption> list = adoptionService.queryByUserId(userId);
+        return ApiResult.success(list);
     }
 
-    /**
-     * 完成领养
-     *
-     * @param adoptionApplication 包含完成信息的领养申请实体
-     * @return 操作结果
-     */
-    @PostMapping("/complete")
-    public Result<String> complete(@RequestBody AdoptionApplication adoptionApplication) {
-        adoptionApplicationService.update(adoptionApplication);
-        return ApiResult.success("领养完成");
+    @PutMapping("/approve/{id}")
+    public Result<String> approve(@PathVariable Integer id) {
+        Adoption adoption = adoptionService.getById(id);
+        if (adoption == null) {
+            return ApiResult.error("申请不存在");
+        }
+        adoption.setStatus("approved");
+        Integer reviewerId = LocalThreadHolder.getUserId();
+        adoption.setReviewerId(reviewerId);
+        adoptionService.update(adoption);
+        return ApiResult.success();
+    }
+
+    @PutMapping("/reject/{id}")
+    public Result<String> reject(@PathVariable Integer id, @RequestBody Adoption adoptionRequest) {
+        Adoption adoption = adoptionService.getById(id);
+        if (adoption == null) {
+            return ApiResult.error("申请不存在");
+        }
+        adoption.setStatus("rejected");
+        adoption.setRejectReason(adoptionRequest.getRejectReason());
+        Integer reviewerId = LocalThreadHolder.getUserId();
+        adoption.setReviewerId(reviewerId);
+        adoptionService.update(adoption);
+        return ApiResult.success();
     }
 }

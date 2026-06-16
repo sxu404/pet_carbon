@@ -17,37 +17,37 @@ public class FeedPointController {
     @Resource
     private FeedPointService feedPointService;
 
-    @PostMapping("/query")
-    public Result<List<FeedPoint>> query(@RequestBody FeedPointQueryDto queryDto) {
-        List<FeedPoint> list = feedPointService.query(queryDto);
-        Integer total = feedPointService.queryCount(queryDto);
-        return ApiResult.success(list, total);
+    @PostMapping
+    public Result<String> add(@RequestBody FeedPoint feedPoint) {
+        if (feedPoint.getFeedStatus() == null) {
+            feedPoint.setFeedStatus("正常");
+        }
+        feedPointService.insert(feedPoint);
+        return ApiResult.success();
     }
 
     @PutMapping
     public Result<String> update(@RequestBody FeedPoint feedPoint) {
         feedPointService.update(feedPoint);
-        return ApiResult.success("操作成功");
-    }
-
-    @PostMapping
-    public Result<String> add(@RequestBody FeedPoint feedPoint) {
-        if (feedPoint.getStatus() == null) {
-            feedPoint.setStatus("normal");
-        }
-        feedPointService.insert(feedPoint);
-        return ApiResult.success("添加成功");
+        return ApiResult.success();
     }
 
     @DeleteMapping
     public Result<String> delete(@RequestBody List<Integer> ids) {
         feedPointService.batchDelete(ids);
-        return ApiResult.success("删除成功");
+        return ApiResult.success();
     }
 
-    @GetMapping("/{id}")
-    public Result<FeedPoint> getById(@PathVariable Integer id) {
-        FeedPoint feedPoint = feedPointService.getById(id);
+    @GetMapping("/{feedId}")
+    public Result<FeedPoint> getById(@PathVariable Integer feedId) {
+        FeedPoint feedPoint = feedPointService.getById(feedId);
         return ApiResult.success(feedPoint);
+    }
+
+    @PostMapping("/query")
+    public Result<List<FeedPoint>> query(@RequestBody FeedPointQueryDto queryDto) {
+        List<FeedPoint> list = feedPointService.query(queryDto);
+        Integer total = feedPointService.queryCount(queryDto);
+        return ApiResult.success(list, total);
     }
 }

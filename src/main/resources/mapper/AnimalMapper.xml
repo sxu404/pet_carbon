@@ -22,6 +22,7 @@
         <result column="submitter_name" property="submitterName"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
     </resultMap>
 
     <!-- VO结果映射 -->
@@ -76,60 +77,59 @@
             found_time = #{foundTime},
             submitter_id = #{submitterId},
             submitter_name = #{submitterName}
-        WHERE id = #{id}
+        WHERE id = #{id} AND is_deleted = 0
     </update>
 
     <!-- 批量删除动物 -->
-    <delete id="batchDelete">
-        DELETE FROM animal
+    <update id="batchDelete">
+        UPDATE animal SET is_deleted = 1
         WHERE id IN 
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-    </delete>
+    </update>
 
     <!-- 根据ID查询 -->
     <select id="getById" parameterType="integer" resultMap="AnimalResultMap">
         SELECT * FROM animal 
-        WHERE id = #{id}
+        WHERE id = #{id} AND is_deleted = 0
     </select>
 
     <!-- 查询动物列表 -->
     <select id="query" parameterType="cn.kmbeast.pojo.dto.query.extend.AnimalQueryDto" 
             resultMap="AnimalVOResultMap">
         SELECT * FROM animal 
-        <where>
-            <if test="queryDto.name != null and queryDto.name != ''">
-                AND name LIKE CONCAT('%', #{queryDto.name}, '%')
-            </if>
-            <if test="queryDto.type != null and queryDto.type != ''">
-                AND type = #{queryDto.type}
-            </if>
-            <if test="queryDto.location != null and queryDto.location != ''">
-                AND location LIKE CONCAT('%', #{queryDto.location}, '%')
-            </if>
-            <if test="queryDto.lifeStatus != null and queryDto.lifeStatus != ''">
-                AND life_status = #{queryDto.lifeStatus}
-            </if>
-            <if test="queryDto.healthStatus != null">
-                AND health_status = #{queryDto.healthStatus}
-            </if>
-            <if test="queryDto.gender != null and queryDto.gender != ''">
-                AND gender = #{queryDto.gender}
-            </if>
-            <if test="queryDto.color != null and queryDto.color != ''">
-                AND color LIKE CONCAT('%', #{queryDto.color}, '%')
-            </if>
-            <if test="queryDto.submitterId != null">
-                AND submitter_id = #{queryDto.submitterId}
-            </if>
-            <if test="queryDto.submitterName != null and queryDto.submitterName != ''">
-                AND submitter_name LIKE CONCAT('%', #{queryDto.submitterName}, '%')
-            </if>
-        </where>
+        WHERE is_deleted = 0
+        <if test="queryDto.name != null and queryDto.name != ''">
+            AND name LIKE CONCAT('%', #{queryDto.name}, '%')
+        </if>
+        <if test="queryDto.type != null and queryDto.type != ''">
+            AND type = #{queryDto.type}
+        </if>
+        <if test="queryDto.location != null and queryDto.location != ''">
+            AND location LIKE CONCAT('%', #{queryDto.location}, '%')
+        </if>
+        <if test="queryDto.lifeStatus != null and queryDto.lifeStatus != ''">
+            AND life_status = #{queryDto.lifeStatus}
+        </if>
+        <if test="queryDto.healthStatus != null">
+            AND health_status = #{queryDto.healthStatus}
+        </if>
+        <if test="queryDto.gender != null and queryDto.gender != ''">
+            AND gender = #{queryDto.gender}
+        </if>
+        <if test="queryDto.color != null and queryDto.color != ''">
+            AND color LIKE CONCAT('%', #{queryDto.color}, '%')
+        </if>
+        <if test="queryDto.submitterId != null">
+            AND submitter_id = #{queryDto.submitterId}
+        </if>
+        <if test="queryDto.submitterName != null and queryDto.submitterName != ''">
+            AND submitter_name LIKE CONCAT('%', #{queryDto.submitterName}, '%')
+        </if>
         ORDER BY create_time DESC
         <if test="queryDto.pageNum != null and queryDto.pageSize != null">
-            LIMIT ${(queryDto.pageNum - 1) * queryDto.pageSize}, #{queryDto.pageSize}
+            LIMIT #{queryDto.pageSize} OFFSET #{queryDto.pageNum} * #{queryDto.pageSize} - #{queryDto.pageSize}
         </if>
     </select>
 
@@ -137,41 +137,41 @@
     <select id="queryCount" parameterType="cn.kmbeast.pojo.dto.query.extend.AnimalQueryDto" 
             resultType="integer">
         SELECT COUNT(*) FROM animal 
-        <where>
-            <if test="queryDto.name != null and queryDto.name != ''">
-                AND name LIKE CONCAT('%', #{queryDto.name}, '%')
-            </if>
-            <if test="queryDto.type != null and queryDto.type != ''">
-                AND type = #{queryDto.type}
-            </if>
-            <if test="queryDto.location != null and queryDto.location != ''">
-                AND location LIKE CONCAT('%', #{queryDto.location}, '%')
-            </if>
-            <if test="queryDto.lifeStatus != null and queryDto.lifeStatus != ''">
-                AND life_status = #{queryDto.lifeStatus}
-            </if>
-            <if test="queryDto.healthStatus != null">
-                AND health_status = #{queryDto.healthStatus}
-            </if>
-            <if test="queryDto.gender != null and queryDto.gender != ''">
-                AND gender = #{queryDto.gender}
-            </if>
-            <if test="queryDto.color != null and queryDto.color != ''">
-                AND color LIKE CONCAT('%', #{queryDto.color}, '%')
-            </if>
-            <if test="queryDto.submitterId != null">
-                AND submitter_id = #{queryDto.submitterId}
-            </if>
-            <if test="queryDto.submitterName != null and queryDto.submitterName != ''">
-                AND submitter_name LIKE CONCAT('%', #{queryDto.submitterName}, '%')
-            </if>
-        </where>
+        WHERE is_deleted = 0
+        <if test="queryDto.name != null and queryDto.name != ''">
+            AND name LIKE CONCAT('%', #{queryDto.name}, '%')
+        </if>
+        <if test="queryDto.type != null and queryDto.type != ''">
+            AND type = #{queryDto.type}
+        </if>
+        <if test="queryDto.location != null and queryDto.location != ''">
+            AND location LIKE CONCAT('%', #{queryDto.location}, '%')
+        </if>
+        <if test="queryDto.lifeStatus != null and queryDto.lifeStatus != ''">
+            AND life_status = #{queryDto.lifeStatus}
+        </if>
+        <if test="queryDto.healthStatus != null">
+            AND health_status = #{queryDto.healthStatus}
+        </if>
+        <if test="queryDto.gender != null and queryDto.gender != ''">
+            AND gender = #{queryDto.gender}
+        </if>
+        <if test="queryDto.color != null and queryDto.color != ''">
+            AND color LIKE CONCAT('%', #{queryDto.color}, '%')
+        </if>
+        <if test="queryDto.submitterId != null">
+            AND submitter_id = #{queryDto.submitterId}
+        </if>
+        <if test="queryDto.submitterName != null and queryDto.submitterName != ''">
+            AND submitter_name LIKE CONCAT('%', #{queryDto.submitterName}, '%')
+        </if>
     </select>
 
     <!-- 统计各类型数量 -->
     <select id="countByType" resultType="map">
         SELECT type, COUNT(*) as count 
         FROM animal 
+        WHERE is_deleted = 0
         GROUP BY type
     </select>
 
@@ -179,6 +179,7 @@
     <select id="countByLifeStatus" resultType="map">
         SELECT life_status, COUNT(*) as count 
         FROM animal 
+        WHERE is_deleted = 0
         GROUP BY life_status
     </select>
 

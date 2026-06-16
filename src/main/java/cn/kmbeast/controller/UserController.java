@@ -6,7 +6,6 @@ import cn.kmbeast.pojo.dto.query.extend.UserQueryDto;
 import cn.kmbeast.pojo.entity.User;
 import cn.kmbeast.service.UserService;
 import cn.kmbeast.utils.JwtUtil;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -21,9 +20,6 @@ public class UserController {
 
     @Resource
     private UserService userService;
-
-    @Resource
-    private PasswordEncoder passwordEncoder;
 
 
     @PostMapping("/login")
@@ -51,18 +47,7 @@ public class UserController {
         if (user == null) {
             return ApiResult.error("用户名不存在");
         }
-        
-        String storedPassword = user.getPassword();
-        boolean passwordMatch = false;
-        
-        // 向后兼容：如果密码看起来像 BCrypt 哈希则使用 matches 方法，否则进行明文比较
-        if (storedPassword != null && storedPassword.startsWith("$2a$") && storedPassword.length() >= 60) {
-            passwordMatch = passwordEncoder.matches(password, storedPassword);
-        } else {
-            passwordMatch = password.equals(storedPassword);
-        }
-        
-        if (!passwordMatch) {
+        if (!password.equals(user.getPassword())) {
             return ApiResult.error("密码错误");
         }
         if (user.getStatus() != null && user.getStatus() == 0) {
@@ -140,37 +125,6 @@ public class UserController {
         List<User> list = userService.query(queryDto);
         Integer total = userService.queryCount(queryDto);
         return ApiResult.success(list, total);
-    }
-
-    @GetMapping("/info/current")
-    public Result<User> getCurrentUser(@RequestHeader("Authorization") String authorization) {
-        try {
-            // 从Authorization头中提取token
-            String token = null;
-            if (authorization != null && authorization.startsWith("Bearer ")) {
-                token = authorization.substring(7);
-            }
-            
-            if (token == null || token.trim().isEmpty()) {
-                return ApiResult.error("未提供认证令牌");
-            }
-            
-            // 从token中解析用户ID
-            Integer userId = JwtUtil.getUserId(token);
-            if (userId == null) {
-                return ApiResult.error("无效的认证令牌");
-            }
-            
-            // 获取用户信息
-            User user = userService.getById(userId);
-            if (user != null) {
-                user.setPassword(null);
-            }
-            return ApiResult.success(user);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ApiResult.error("获取用户信息失败");
-        }
     }
 
     @GetMapping("/info/{id}")
