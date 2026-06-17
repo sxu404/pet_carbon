@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.kmbeast.mapper.CommunityPostMapper">
+
+    <insert id="insert" parameterType="cn.kmbeast.pojo.entity.CommunityPost" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO community_post (
+            publisher_id,
+            publisher_username,
+            title,
+            content,
+            category,
+            tags,
+            location,
+            animal_type,
+            images,
+            status,
+            view_count,
+            like_count,
+            comment_count
+        ) VALUES (
+            #{publisherId},
+            #{publisherUsername},
+            #{title},
+            #{content},
+            #{category},
+            #{tags},
+            #{location},
+            #{animalType},
+            #{images},
+            #{status},
+            #{viewCount},
+            #{likeCount},
+            #{commentCount}
+        )
+    </insert>
+
+    <update id="update" parameterType="cn.kmbeast.pojo.entity.CommunityPost">
+        UPDATE community_post
+        <set>
+            <if test="publisherId != null">
+                publisher_id = #{publisherId},
+            </if>
+            <if test="publisherUsername != null">
+                publisher_username = #{publisherUsername},
+            </if>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="content != null">
+                content = #{content},
+            </if>
+            <if test="category != null">
+                category = #{category},
+            </if>
+            <if test="tags != null">
+                tags = #{tags},
+            </if>
+            <if test="location != null">
+                location = #{location},
+            </if>
+            <if test="animalType != null">
+                animal_type = #{animalType},
+            </if>
+            <if test="images != null">
+                images = #{images},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="viewCount != null">
+                view_count = #{viewCount},
+            </if>
+            <if test="likeCount != null">
+                like_count = #{likeCount},
+            </if>
+            <if test="commentCount != null">
+                comment_count = #{commentCount},
+            </if>
+            <if test="auditOpinion != null">
+                audit_opinion = #{auditOpinion},
+            </if>
+            <if test="auditTime != null">
+                audit_time = #{auditTime},
+            </if>
+            <if test="auditorId != null">
+                auditor_id = #{auditorId},
+            </if>
+        </set>
+        WHERE id = #{id} AND is_deleted = 0
+    </update>
+
+    <update id="deleteById" parameterType="long">
+        UPDATE community_post SET is_deleted = 1 WHERE id = #{id}
+    </update>
+
+    <update id="batchDelete" parameterType="list">
+        UPDATE community_post SET is_deleted = 1 WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="audit" parameterType="cn.kmbeast.pojo.entity.CommunityPost">
+        UPDATE community_post
+        SET status = #{status},
+            audit_opinion = #{auditOpinion},
+            audit_time = #{auditTime},
+            auditor_id = #{auditorId}
+        WHERE id = #{id} AND is_deleted = 0
+    </update>
+
+    <update id="batchAudit" parameterType="map">
+        UPDATE community_post
+        SET status = #{status},
+            audit_opinion = #{auditOpinion},
+            audit_time = #{auditTime},
+            auditor_id = #{auditorId}
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND is_deleted = 0
+    </update>
+
+    <select id="getById" resultType="cn.kmbeast.pojo.entity.CommunityPost">
+        SELECT
+            id,
+            publisher_id AS publisherId,
+            publisher_username AS publisherUsername,
+            title,
+            content,
+            category,
+            tags,
+            location,
+            animal_type AS animalType,
+            images,
+            status,
+            view_count AS viewCount,
+            like_count AS likeCount,
+            comment_count AS commentCount,
+            audit_opinion AS auditOpinion,
+            audit_time AS auditTime,
+            auditor_id AS auditorId,
+            create_time AS createTime,
+            update_time AS updateTime,
+            is_deleted AS isDeleted
+        FROM community_post
+        WHERE id = #{id} AND is_deleted = 0
+    </select>
+
+    <select id="query" resultType="cn.kmbeast.pojo.entity.CommunityPost">
+        SELECT
+            id,
+            publisher_id AS publisherId,
+            publisher_username AS publisherUsername,
+            title,
+            content,
+            category,
+            tags,
+            location,
+            animal_type AS animalType,
+            images,
+            status,
+            view_count AS viewCount,
+            like_count AS likeCount,
+            comment_count AS commentCount,
+            audit_opinion AS auditOpinion,
+            audit_time AS auditTime,
+            auditor_id AS auditorId,
+            create_time AS createTime,
+            update_time AS updateTime,
+            is_deleted AS isDeleted
+        FROM community_post
+        <where>
+            is_deleted = 0
+            <if test="title != null and title != ''">
+                AND title LIKE concat('%', #{title}, '%')
+            </if>
+            <if test="publisherUsername != null and publisherUsername != ''">
+                AND publisher_username LIKE concat('%', #{publisherUsername}, '%')
+            </if>
+            <if test="publisherId != null">
+                AND publisher_id = #{publisherId}
+            </if>
+            <if test="category != null and category != ''">
+                AND category = #{category}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="startTime != null">
+                AND create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND create_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        <if test="current != null and size != null">
+            LIMIT #{current}, #{size}
+        </if>
+    </select>
+
+    <select id="queryCount" resultType="integer">
+        SELECT COUNT(*) FROM community_post
+        <where>
+            is_deleted = 0
+            <if test="title != null and title != ''">
+                AND title LIKE concat('%', #{title}, '%')
+            </if>
+            <if test="publisherUsername != null and publisherUsername != ''">
+                AND publisher_username LIKE concat('%', #{publisherUsername}, '%')
+            </if>
+            <if test="publisherId != null">
+                AND publisher_id = #{publisherId}
+            </if>
+            <if test="category != null and category != ''">
+                AND category = #{category}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="startTime != null">
+                AND create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND create_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="getStats" resultType="map">
+        SELECT
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN status = '已通过' THEN 1 ELSE 0 END) AS approvedCount,
+            SUM(CASE WHEN status = '待审核' THEN 1 ELSE 0 END) AS pendingCount,
+            SUM(CASE WHEN status = '已拒绝' THEN 1 ELSE 0 END) AS rejectedCount,
+            SUM(view_count) AS totalViewCount,
+            SUM(like_count) AS totalLikeCount,
+            SUM(comment_count) AS totalCommentCount
+        FROM community_post
+        WHERE is_deleted = 0
+    </select>
+
+    <select id="getCategoryStats" resultType="map">
+        SELECT
+            category,
+            COUNT(*) AS count
+        FROM community_post
+        WHERE is_deleted = 0 AND category IS NOT NULL
+        GROUP BY category
+    </select>
+
+    <select id="getTrendData" resultType="map">
+        SELECT
+            DATE_FORMAT(create_time, #{format}) AS date,
+            COUNT(*) AS count
+        FROM community_post
+        WHERE is_deleted = 0
+        <if test="startTime != null">
+            AND create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND create_time &lt;= #{endTime}
+        </if>
+        GROUP BY DATE_FORMAT(create_time, #{format})
+        ORDER BY date
+    </select>
+
+</mapper>

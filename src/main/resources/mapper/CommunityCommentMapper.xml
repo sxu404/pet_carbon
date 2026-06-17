@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.kmbeast.mapper.CommunityCommentMapper">
+
+    <insert id="insert" parameterType="cn.kmbeast.pojo.entity.CommunityComment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO community_comment (
+            post_id,
+            publisher_id,
+            publisher_username,
+            content,
+            like_count
+        ) VALUES (
+            #{postId},
+            #{publisherId},
+            #{publisherUsername},
+            #{content},
+            #{likeCount}
+        )
+    </insert>
+
+    <update id="deleteById" parameterType="long">
+        UPDATE community_comment SET is_deleted = 1 WHERE id = #{id}
+    </update>
+
+    <update id="deleteByPostId" parameterType="long">
+        UPDATE community_comment SET is_deleted = 1 WHERE post_id = #{postId}
+    </update>
+
+    <select id="getById" resultType="cn.kmbeast.pojo.entity.CommunityComment">
+        SELECT
+            id,
+            post_id AS postId,
+            publisher_id AS publisherId,
+            publisher_username AS publisherUsername,
+            content,
+            like_count AS likeCount,
+            create_time AS createTime,
+            update_time AS updateTime,
+            is_deleted AS isDeleted
+        FROM community_comment
+        WHERE id = #{id} AND is_deleted = 0
+    </select>
+
+    <select id="queryByPostId" resultType="cn.kmbeast.pojo.entity.CommunityComment">
+        SELECT
+            id,
+            post_id AS postId,
+            publisher_id AS publisherId,
+            publisher_username AS publisherUsername,
+            content,
+            like_count AS likeCount,
+            create_time AS createTime,
+            update_time AS updateTime,
+            is_deleted AS isDeleted
+        FROM community_comment
+        WHERE post_id = #{postId} AND is_deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="queryCountByPostId" resultType="integer">
+        SELECT COUNT(*) FROM community_comment
+        WHERE post_id = #{postId} AND is_deleted = 0
+    </select>
+
+</mapper>
